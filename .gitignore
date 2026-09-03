@@ -1,0 +1,5 @@
+.env
+__pycache__/
+*.pyc
+audit_trail.jsonl
+models/rs-eurosat-classifier/*.pt
