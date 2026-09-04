@@ -2,4 +2,7 @@
 __pycache__/
 *.pyc
 audit_trail.jsonl
-models/rs-eurosat-classifier/*.pt
+models/
+*.pt
+.vscode/
+.idea/

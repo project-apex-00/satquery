@@ -1,56 +1,79 @@
 # SatQuery AI
 
-Plain-English satellite image analysis. Upload an image, ask a question,
-get an answer backed by a real remote-sensing-adapted model — not a
-generic AI guess.
+Agentic multi-modal remote sensing vision-language assistant for analyzing single and paired satellite imagery through natural-language queries.
 
-## How it works
+## Features
 
-1. User uploads an image + asks a question
-2. `agent/router.py` decides what kind of task this is
-3. The right specialist model analyzes the image
-   (`inference/rs_inference.py` — fine-tuned CLIP classifier)
-4. `agent/gemini_client.py` turns the structured result into a natural answer
-5. `agent/audit_log.py` records every step (the "not a black box" evidence)
+- **Single-Image Analysis**: Remote-sensing VQA and text-guided spatial region grounding with bounding box generation.
+- **Bi-Temporal Change Analysis**: Change vector analysis between $T_1$ and $T_2$ pairs with spatial change heatmaps.
+- **Optical-SAR Cross-Modal Fusion**: Joint feature extraction fusing optical spectral reflectance with radar microwave backscatter through cloud cover.
+- **Agentic Orchestration**: Input validation, predefined specialist tool registry, and auditable execution logging.
 
-## Local setup
+## Local Setup
 
+1. Install dependencies:
 ```bash
-pip install torch --index-url https://download.pytorch.org/whl/cpu
 pip install -r requirements.txt
-cp .env.example .env   # then fill in your real GEMINI_API_KEY
-uvicorn backend.main:app --reload
 ```
 
-First request will auto-download the model from Hugging Face
-(`KowhickMaran/rs-eurosat-classifier`) into `models/rs-eurosat-classifier/`.
-
-Test it:
+2. Configure environment variables:
 ```bash
-curl -X POST http://localhost:8000/analyze \
-  -F "question=What kind of land is this?" \
-  -F "image=@data/sample_images/test.png"
+cp .env.example .env
 ```
+Add your `GEMINI_API_KEY` to `.env`.
+
+3. Run the application:
+```bash
+uvicorn backend.main:app --reload --port 8000
+```
+Open `http://localhost:8000/app` in your browser.
 
 ## Deploying to Railway
 
-1. Push this folder to a GitHub repo
-2. Railway → New Project → Deploy from GitHub repo
-3. Railway auto-detects the `Procfile` and runs it
-4. Go to your service → **Variables** tab → add:
-   - `GEMINI_API_KEY` = your real key
-   - `HF_REPO_ID` = `KowhickMaran/rs-eurosat-classifier` (only if different from default)
-5. Deploy — first request will be slower (downloading the model), after that it's fast
+1. Push this folder to a GitHub repository:
+```bash
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin https://github.com/your-username/satquery-ai.git
+git push -u origin main
+```
 
-## Status
+2. On [Railway](https://railway.app):
+   - Click **New Project** -> **Deploy from GitHub repo**.
+   - Select your repository.
+   - In the **Variables** tab, set:
+     - `GEMINI_API_KEY`: your Google Gemini API key.
+     - `GEMINI_MODEL`: `gemini-3.5-flash` (optional, defaults to `gemini-3.5-flash`).
+     - `HF_REPO_ID`: `KowhickMaran/rs-eurosat-classifier` (optional, defaults to `KowhickMaran/rs-eurosat-classifier`).
+   - Under **Settings** -> **Networking**, click **Generate Domain**.
+   - Access the web app at `https://your-domain.up.railway.app/app`.
 
-| Feature | Status |
-|---|---|
-| RS-adapted specialist model | Done |
-| Local inference | Done |
-| Backend + Gemini integration | Done (single-image path) |
-| Agent routing | Basic version done |
-| Audit trail | Done |
-| Change detection | Not built |
-| Optical+SAR fusion | Not built |
-| Frontend | Not built |
+## Project Structure
+
+```
+├── Procfile
+├── requirements.txt
+├── .env.example
+├── .gitignore
+├── README.md
+├── agent/
+│   ├── audit_log.py
+│   ├── gemini_client.py
+│   ├── router.py
+│   └── tool_registry.py
+├── backend/
+│   └── main.py
+├── inference/
+│   ├── rs_inference.py
+│   ├── grounding_engine.py
+│   ├── change_engine.py
+│   └── sar_fusion_engine.py
+├── frontend/
+│   ├── index.html
+│   ├── style.css
+│   └── app.js
+└── data/
+    └── sample_images/
+```
